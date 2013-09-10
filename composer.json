@@ -1,0 +1,24 @@
+{
+    "name": "lavoaster/oauth2server",
+    "description": "Laravel 4 OAuth2Server, wraps around bshaffer/oauth2-server-php",
+    "authors": [
+        {
+            "name": "Adam Lavin",
+            "email": "adam@lavoaster.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "bshaffer/oauth2-server-php": "dev-develop",
+        "illuminate/support": "4.0.x"
+    },
+    "autoload": {
+        "classmap": [
+            "src/migrations"
+        ],
+        "psr-0": {
+            "Lavoaster\\OAuth2Server": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
