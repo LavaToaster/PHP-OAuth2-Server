@@ -1,6 +1,6 @@
 <?php namespace Lavoaster\OAuth2Server\Storage;
 
-interface StorageInterface
+interface PersistenceInterface
 {
 	/**
 	 * Saves the resource
