@@ -57,10 +57,10 @@ interface ClientInterface
 	/**
 	 * Sets the clients redirect uris
 	 *
-	 * @param array $redirectUri
+	 * @param array $redirectUris
 	 * @return void
 	 */
-	public function setRedirectUris(array $redirectUri);
+	public function setRedirectUris(array $redirectUris);
 
 	/**
 	 * Adds a redirect uri to the clients supported redirect uri's
