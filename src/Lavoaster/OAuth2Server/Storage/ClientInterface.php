@@ -85,4 +85,19 @@ interface ClientInterface extends StorageInterface
 	 * @return bool
 	 */
 	public function checkRedirectUri($redirectUri);
+
+	/**
+	 * Returns the client type
+	 *
+	 * @return string
+	 */
+	public function getType();
+
+	/**
+	 * Sets the client type
+	 *
+	 * @param string $type
+	 * @return mixed
+	 */
+	public function setType($type);
 }

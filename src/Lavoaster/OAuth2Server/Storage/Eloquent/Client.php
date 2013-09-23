@@ -138,4 +138,25 @@ class Client extends \Eloquent implements ClientInterface
 	{
 		return in_array($redirectUri, $this->getRedirectUris());
 	}
+
+	/**
+	 * Returns the client type
+	 *
+	 * @return string
+	 */
+	public function getType()
+	{
+		return $this->type;
+	}
+
+	/**
+	 * Sets the client type
+	 *
+	 * @param string $type
+	 * @return mixed
+	 */
+	public function setType($type)
+	{
+		$this->type = $type;
+	}
 }
