@@ -15,6 +15,7 @@ class CreateOauthClients extends Migration {
 		{
 			$table->string('id', 80)->primary();
 			$table->string('secret', 80);
+			$table->string('type', 12)->default('public'); // I know the server should not make assumptions on the client type but the majority of clients will be public.
 			$table->text('supported_scopes');
 			$table->text('redirect_uris');
 		});
