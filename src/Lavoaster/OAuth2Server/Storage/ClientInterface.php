@@ -1,6 +1,6 @@
 <?php namespace Lavoaster\OAuth2Server\Storage;
 
-interface ClientInterface
+interface ClientInterface extends StorageInterface
 {
 	/**
 	 * Returns the clients id

@@ -1,6 +1,6 @@
 <?php namespace Lavoaster\OAuth2Server\Storage;
 
-interface TokenInterface
+interface TokenInterface extends StorageInterface
 {
 	/**
 	 * Returns the OAuth Client
