@@ -15,10 +15,10 @@ class CreateOauthAuthorizationCodes extends Migration {
 		{
 			$table->string('authorization_code', 40)->primary();
 			$table->string('client_id', 80);
-			$table->string('user_id'); // Need to come back to this
-			$table->string('redirect_uri', 2000);
+			$table->integer('user_id')->unsigned()->nullable();
+			$table->text('redirect_uri');
 			$table->timestamp('expires');
-			$table->text('scope');
+			$table->text('scopes')->nullable();
 		});
 	}
 

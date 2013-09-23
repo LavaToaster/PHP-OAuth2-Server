@@ -15,9 +15,9 @@ class CreateOauthRefreshTokens extends Migration {
 		{
 			$table->string('refresh_token', 40)->primary();
 			$table->string('client_id', 80);
-			$table->string('user_id'); // Need to come back to this
+			$table->integer('user_id')->unsigned()->nullable();
 			$table->timestamp('expires');
-			$table->text('scope');
+			$table->text('scopes')->nullable();
 		});
 	}
 

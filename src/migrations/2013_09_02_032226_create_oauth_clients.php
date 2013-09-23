@@ -15,7 +15,6 @@ class CreateOauthClients extends Migration {
 		{
 			$table->string('client_id', 80)->primary();
 			$table->string('client_secret', 80);
-			$table->string('default_scope');
 			$table->text('supported_scopes');
 			$table->text('redirect_uri');
 		});
