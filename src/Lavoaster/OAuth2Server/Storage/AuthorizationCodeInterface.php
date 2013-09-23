@@ -20,7 +20,7 @@ interface AuthorizationCodeInterface extends TokenInterface
 	/**
 	 * Returns the redirect uri
 	 *
-	 * @return mixed
+	 * @return string
 	 */
 	public function getRedirectUri();
 
