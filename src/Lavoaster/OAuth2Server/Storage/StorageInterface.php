@@ -12,7 +12,7 @@ interface StorageInterface
 	/**
 	 * Deletes the resource
 	 *
-	 * @return mixed
+	 * @return void
 	 */
 	public function delete();
 }
