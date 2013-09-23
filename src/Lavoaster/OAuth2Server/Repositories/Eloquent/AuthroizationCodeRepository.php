@@ -21,7 +21,7 @@ class AuthorizationCodeRepository implements AuthorizationCodeRepositoryInterfac
 	 */
 	public function create(array $attributes)
 	{
-		$this->authorizationCode->create($attributes);
+		return $this->authorizationCode->create($attributes);
 	}
 
 	/**
@@ -32,7 +32,7 @@ class AuthorizationCodeRepository implements AuthorizationCodeRepositoryInterfac
 	 */
 	public function find($authorizationCode)
 	{
-		$this->authorizationCode->find($authorizationCode);
+		return $this->authorizationCode->find($authorizationCode);
 	}
 
 }
