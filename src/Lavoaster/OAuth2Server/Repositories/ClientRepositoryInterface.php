@@ -13,10 +13,10 @@ interface ClientRepositoryInterface
 	public function create(array $attributes);
 
 	/**
-	 * Finds an access token
+	 * Finds a client by their id
 	 *
-	 * @param string $accessToken
+	 * @param string $clientId
 	 * @return ClientInterface
 	 */
-	public function find($accessToken);
+	public function find($clientId);
 }
