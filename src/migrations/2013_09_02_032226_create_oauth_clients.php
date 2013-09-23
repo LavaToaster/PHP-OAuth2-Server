@@ -13,8 +13,8 @@ class CreateOauthClients extends Migration {
 	{
 		Schema::create('oauth_clients', function(\Illuminate\Database\Schema\Blueprint $table)
 		{
-			$table->string('client_id', 80)->primary();
-			$table->string('client_secret', 80);
+			$table->string('id', 80)->primary();
+			$table->string('secret', 80);
 			$table->text('supported_scopes');
 			$table->text('redirect_uri');
 		});
