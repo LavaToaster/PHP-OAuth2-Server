@@ -1,6 +1,6 @@
 {
     "name": "lavoaster/oauth2server",
-    "description": "Laravel 4 OAuth2Server, wraps around bshaffer/oauth2-server-php",
+    "description": "Laravel 4 OAuth2Server",
 	"license": "MIT",
     "authors": [
         {
@@ -10,7 +10,6 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "bshaffer/oauth2-server-php": "dev-develop",
         "illuminate/support": "4.0.x"
     },
     "autoload": {
