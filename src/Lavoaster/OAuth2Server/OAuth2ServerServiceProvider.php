@@ -74,6 +74,16 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 
 			return $app->make('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface');
 		});
+
+		$this->app['oauth2server.repositories.user'] = $this->app->share(function(Application $app)
+		{
+			$app->singleton(
+				'Lavoaster\OAuth2Server\Storage\OAuthUserRepositoryInterface',
+				$app['config']['lavoaster/oauth2server::user.repository']
+			);
+
+			return $app->make('Lavoaster\OAuth2Server\Storage\OAuthUserRepositoryInterface');
+		});
 	}
 
 	protected function registerStorage()
@@ -116,6 +126,16 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 			);
 
 			return $app->make('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface');
+		});
+
+		$this->app['oauth2server.storage.user'] = $this->app->share(function(Application $app)
+		{
+			$app->singleton(
+				'Lavoaster\OAuth2Server\Storage\OAuthUserInterface',
+				$app['config']['lavoaster/oauth2server::user.storage']
+			);
+
+			return $app->make('Lavoaster\OAuth2Server\Storage\OAuthUserInterface');
 		});
 	}
 
