@@ -28,6 +28,6 @@ return [
 		'table' => 'users', // Table that contains the users
 		'identifier' => 'username', // Column to use when identifying users through the credentials grant type
 		'storage' => 'User', // Class that implements OAuthUserInterface so the library can query your user table
-		'repository' => 'User'
+		'repository' => 'UserRepository'
 	]
 ];

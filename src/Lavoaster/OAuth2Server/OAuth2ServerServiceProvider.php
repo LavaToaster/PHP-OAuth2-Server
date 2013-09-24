@@ -29,7 +29,6 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 	public function register()
 	{
 		$this->registerRepositories();
-		$this->registerStorage();
 		$this->registerOAuth();
 	}
 
@@ -42,6 +41,11 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 				$app['config']['lavoaster/oauth2server::access_token.repository']
 			);
 
+			$app->bind(
+				'Lavoaster\OAuth2Server\Storage\AccessTokenInterface',
+				$app['config']['lavoaster/oauth2server::access_token.storage']
+			);
+
 			return $app->make('Lavoaster\OAuth2Server\Repositories\AccessTokenRepositoryInterface');
 		});
 
@@ -50,6 +54,11 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 			$app->singleton(
 				'Lavoaster\OAuth2Server\Repositories\RefreshTokenRepositoryInterface',
 				$app['config']['lavoaster/oauth2server::refresh_token.repository']
+			);
+
+			$app->bind(
+				'Lavoaster\OAuth2Server\Storage\RefreshTokenInterface',
+				$app['config']['lavoaster/oauth2server::refresh_token.storage']
 			);
 
 			return $app->make('Lavoaster\OAuth2Server\Repositories\RefreshTokenRepositoryInterface');
@@ -62,7 +71,12 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 				$app['config']['lavoaster/oauth2server::client.repository']
 			);
 
-			return $app->make('Lavoaster\OAuth2Server\Repositories\AccessTokenRepositoryInterfac');
+			$app->bind(
+				'Lavoaster\OAuth2Server\Storage\AccessTokenInterface',
+				$app['config']['lavoaster/oauth2server::client.storage']
+			);
+
+			return $app->make('Lavoaster\OAuth2Server\Repositories\AccessTokenRepositoryInterface');
 		});
 
 		$this->app['oauth2server.repositories.authorization_code'] = $this->app->share(function(Application $app)
@@ -70,6 +84,11 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 			$app->singleton(
 				'Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface',
 				$app['config']['lavoaster/oauth2server::authorization_code.repository']
+			);
+
+			$app->bind(
+				'Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface',
+				$app['config']['lavoaster/oauth2server::authorization_code.storage']
 			);
 
 			return $app->make('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface');
@@ -82,60 +101,12 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 				$app['config']['lavoaster/oauth2server::user.repository']
 			);
 
-			return $app->make('Lavoaster\OAuth2Server\Storage\OAuthUserRepositoryInterface');
-		});
-	}
-
-	protected function registerStorage()
-	{
-		$this->app['oauth2server.storage.access_token'] = $this->app->share(function(Application $app)
-		{
-			$app->bind(
-				'Lavoaster\OAuth2Server\Storage\AccessTokenInterface',
-				$app['config']['lavoaster/oauth2server::access_token.storage']
-			);
-
-			return $app->make('Lavoaster\OAuth2Server\Storage\AccessTokenInterface');
-		});
-
-		$this->app['oauth2server.storage.refresh_token'] = $this->app->share(function(Application $app)
-		{
-			$app->bind(
-				'Lavoaster\OAuth2Server\Storage\RefreshTokenInterface',
-				$app['config']['lavoaster/oauth2server::refresh_token.storage']
-			);
-
-			return $app->make('Lavoaster\OAuth2Server\Storage\RefreshTokenInterface');
-		});
-
-		$this->app['oauth2server.storage.client'] = $this->app->share(function(Application $app)
-		{
-			$app->bind(
-				'Lavoaster\OAuth2Server\Storage\AccessTokenInterface',
-				$app['config']['lavoaster/oauth2server::client.storage']
-			);
-
-			return $app->make('Lavoaster\OAuth2Server\Storage\AccessTokenInterface');
-		});
-
-		$this->app['oauth2server.storage.authorization_code'] = $this->app->share(function(Application $app)
-		{
-			$app->bind(
-				'Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface',
-				$app['config']['lavoaster/oauth2server::authorization_code.storage']
-			);
-
-			return $app->make('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface');
-		});
-
-		$this->app['oauth2server.storage.user'] = $this->app->share(function(Application $app)
-		{
 			$app->bind(
 				'Lavoaster\OAuth2Server\Storage\OAuthUserInterface',
 				$app['config']['lavoaster/oauth2server::user.storage']
 			);
 
-			return $app->make('Lavoaster\OAuth2Server\Storage\OAuthUserInterface');
+			return $app->make('Lavoaster\OAuth2Server\Storage\OAuthUserRepositoryInterface');
 		});
 	}
 
@@ -143,7 +114,13 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 	{
 		$this->app['oauth2server'] = $this->app->share(function(Application $app)
 		{
-			return $app->make('Lavoaster\OAuth2Server\OAuth2Server');
+			return new OAuth2Server(
+				$app['oauth2server.repositories.user'],
+				$app['oauth2server.repositories.access_token'],
+				$app['oauth2server.repositories.refresh_token'],
+				$app['oauth2server.repositories.client'],
+				$app['oauth2server.repositories.authorization_code']
+			);
 		});
 	}
 }
