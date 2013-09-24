@@ -15,9 +15,9 @@ use OAuth2\Server;
 
 class OAuth2Server {
 
-    public function __construct()
-    {
+	public function __construct()
+	{
 
-    }
+	}
 
 }
