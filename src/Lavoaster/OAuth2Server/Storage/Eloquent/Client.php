@@ -75,6 +75,32 @@ class Client extends \Eloquent implements ClientInterface
 	}
 
 	/**
+	 * Checks if the client has access to a given scope
+	 *
+	 * @param string $scope
+	 * @return bool
+	 */
+	public function hasScope($scope)
+	{
+		return in_array($scope, $this->getSupportedScopes());
+	}
+
+	/**
+	 * Checks if the client has access to a set of scopes
+	 *
+	 * @param array $scopes
+	 * @return bool
+	 */
+	public function hasScopes(array $scopes)
+	{
+		foreach($scopes as $scope) {
+			if(!$this->hasScope($scope)) return false;
+		}
+
+		return true;
+	}
+
+	/**
 	 * Returns all of the clients redirect uris
 	 *
 	 * @return array

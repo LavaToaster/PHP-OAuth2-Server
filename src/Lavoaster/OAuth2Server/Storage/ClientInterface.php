@@ -55,6 +55,22 @@ interface ClientInterface extends PersistenceInterface
 	public function getRedirectUris();
 
 	/**
+	 * Checks if the client has access to a given scope
+	 *
+	 * @param string $scope
+	 * @return bool
+	 */
+	public function hasScope($scope);
+
+	/**
+	 * Checks if the client has access to a set of scopes
+	 *
+	 * @param array $scopes
+	 * @return bool
+	 */
+	public function hasScopes(array $scopes);
+
+	/**
 	 * Sets the clients redirect uris
 	 *
 	 * @param array $redirectUris
