@@ -2,9 +2,16 @@
 
 class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 {
-	public function testValidateRequiredParamsReturnsFalseWhenResponseTypeIsNotCode()
+	public function testValidateRequiredParamsReturnsFalseWhenResponseTypeIsMissing()
 	{
 		$class = $this->getClass($this->getRequest(['response_type' => null]), $this->getConfig());
+
+		$this->assertFalse($class->validateRequiredParams());
+	}
+
+	public function testValidateRequiredParamsReturnsFalseWhenResponseTypeIsNotCode()
+	{
+		$class = $this->getClass($this->getRequest(['response_type' => 'notcode']), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
 	}
@@ -67,7 +74,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 	public function testErrorIsSetWhenSomethingFails()
 	{
 		$error = [
-			'error' => 'invalid_request',
+			'error' => 'unsupported_response_type',
 			'error_description' => 'response_type parameter MUST be set to code',
 			'error_uri' => 'http://tools.ietf.org/html/rfc6749#section-4.1.1'
 		];

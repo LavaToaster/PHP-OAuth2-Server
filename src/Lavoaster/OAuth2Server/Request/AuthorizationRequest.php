@@ -85,9 +85,13 @@ class AuthorizationRequest
 
 	public function validateRequiredParams()
 	{
+		if (!$this->requestDetails['response_type']) {
+			return $this->error('invalid_request', 'Required parameter response_type is missing', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
+		}
+
 		/* According to the RFC this MUST be set to code even though it is the only value at this time */
 		if ($this->requestDetails['response_type'] != 'code') {
-			return $this->error('invalid_request', 'response_type parameter MUST be set to code', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
+			return $this->error('unsupported_response_type', 'response_type parameter MUST be set to code', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
 		}
 
 		if (!$this->requestDetails['client_id']) {
