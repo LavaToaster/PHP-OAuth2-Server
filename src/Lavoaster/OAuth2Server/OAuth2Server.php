@@ -33,7 +33,9 @@ class OAuth2Server {
 	 */
 	protected $authorizationCodeRepository;
 
+	protected $config = [];
 	public function __construct(
+		$configuration,
 		OAuthUserRepositoryInterface $userRepository,
 		AccessTokenRepositoryInterface $accessTokenRepository,
 		RefreshTokenRepositoryInterface $refreshTokenRepository,
@@ -41,6 +43,7 @@ class OAuth2Server {
 		AuthorizationCodeRepository $authorizationCodeRepository
 	)
 	{
+		$this->config = $configuration;
 		$this->userRepository = $userRepository;
 		$this->accessTokenRepository = $accessTokenRepository;
 		$this->authorizationCodeRepository = $authorizationCodeRepository;

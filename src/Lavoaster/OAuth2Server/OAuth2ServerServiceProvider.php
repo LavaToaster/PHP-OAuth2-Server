@@ -115,6 +115,7 @@ class OAuth2ServerServiceProvider extends ServiceProvider {
 		$this->app['oauth2server'] = $this->app->share(function(Application $app)
 		{
 			return new OAuth2Server(
+				$app['config']['lavoaster/oauth2server::config'],
 				$app['oauth2server.repositories.user'],
 				$app['oauth2server.repositories.access_token'],
 				$app['oauth2server.repositories.refresh_token'],
