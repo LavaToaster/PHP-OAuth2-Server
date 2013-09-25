@@ -3,6 +3,12 @@
 /* TODO: Expand on descriptions and format them to laravel style */
 
 return [
+	'oauth' => [
+		'enforce_redirect_uri' => true,  // Should the Redirect URI  always be present in the request
+		'enforce_state'        => false, // Should the state always be in the request
+		'default_scope'        => null, // If no default is specified and the client doesn't send the scope parameter, the request must fail according to the OAuth2.0 RFC.
+	],
+
 	'access_token' => [
 		'storage' => 'Lavoaster\OAuth2Server\Storage\Eloquent\AccessToken', // Class that implements the access token interface
 		'repository' => 'Lavoaster\OAuth2Server\Repositories\Eloquent\AccessTokenRepository' // Class that implements the access token repository interface
