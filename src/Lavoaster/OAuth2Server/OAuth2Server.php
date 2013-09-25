@@ -2,7 +2,7 @@
 
 use Lavoaster\OAuth2Server\Repositories\AccessTokenRepositoryInterface;
 use Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface;
-use Lavoaster\OAuth2Server\Repositories\Eloquent\AuthorizationCodeRepository;
+use Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface;
 use Lavoaster\OAuth2Server\Repositories\OAuthUserRepositoryInterface;
 use Lavoaster\OAuth2Server\Repositories\RefreshTokenRepositoryInterface;
 
@@ -29,20 +29,20 @@ class OAuth2Server {
 	protected $clientRepository;
 
 	/**
-	 * @var Repositories\Eloquent\AuthorizationCodeRepository
+	 * @var Repositories\AuthorizationCodeRepositoryInterface
 	 */
 	protected $authorizationCodeRepository;
 
 	protected $config = [];
+
 	public function __construct(
 		$configuration,
 		OAuthUserRepositoryInterface $userRepository,
 		AccessTokenRepositoryInterface $accessTokenRepository,
 		RefreshTokenRepositoryInterface $refreshTokenRepository,
 		ClientRepositoryInterface $clientRepository,
-		AuthorizationCodeRepository $authorizationCodeRepository
-	)
-	{
+		AuthorizationCodeRepositoryInterface $authorizationCodeRepository
+	) {
 		$this->config = $configuration;
 		$this->userRepository = $userRepository;
 		$this->accessTokenRepository = $accessTokenRepository;
