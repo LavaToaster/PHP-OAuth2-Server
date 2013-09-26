@@ -139,7 +139,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
 		$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
 
-		$this->assertTrue($class->validateRequest());
+		$this->assertFalse($class->validateRequest(), 'Everything wasn\'t hunky dory it seems :(');
 	}
 
 	public function testErrorIsSetWhenSomethingFails()
