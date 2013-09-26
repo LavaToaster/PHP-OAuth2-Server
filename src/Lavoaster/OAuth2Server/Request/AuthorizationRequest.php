@@ -27,6 +27,11 @@ class AuthorizationRequest
 		'error_uri' => null
 	];
 
+	/**
+	 * @var \Illuminate\Support\Str
+	 */
+	protected $str;
+
 	protected $requestDetails = [
 		'response_type' => null,
 		'client_id'     => null,
@@ -49,12 +54,14 @@ class AuthorizationRequest
 		array $requestDetails,
 		array $configuration,
 		AuthorizationCodeRepositoryInterface $authorizationCodeRepository,
-		ClientRepositoryInterface $clientRepository
+		ClientRepositoryInterface $clientRepository,
+		\Illuminate\Support\Str $str
 	) {
 		$this->requestDetails = array_merge($this->requestDetails, $requestDetails);
 		$this->config = $configuration;
 		$this->authorizationCodeRepository = $authorizationCodeRepository;
 		$this->clientRepository = $clientRepository;
+		$this->str = $str;
 	}
 
 	/**
