@@ -49,6 +49,7 @@ class AuthorizationRequest
 	 * @param array $configuration
 	 * @param AuthorizationCodeRepositoryInterface $authorizationCodeRepository
 	 * @param ClientRepositoryInterface $clientRepository
+	 * @param \Illuminate\Support\Str $str
 	 */
 	public function __construct(
 		array $requestDetails,
