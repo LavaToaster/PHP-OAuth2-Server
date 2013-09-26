@@ -57,7 +57,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$this->assertTrue($class->validateRequiredParams());
 	}
 
-	public function testValidateUriCallsClientInterfaceAndFails()
+	public function testValidateRedirectUriCallsClientInterfaceAndFailsWhenRedirectUriIsInvalid()
 	{
 		$client = $this->getClient();
 		$client->shouldReceive('checkRedirectUri')->once()->andReturn(false);
@@ -66,6 +66,16 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 
 		$this->assertFalse($class->validateRedirectUri('http://localhost', $client));
 		$this->assertEquals(400, $class->getError()['status']);
+	}
+
+	public function testValidateRedirectUriCallsClientInterfaceAndReturnsTrueWhenNormal()
+	{
+		$client = $this->getClient();
+		$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
+
+		$class = $this->getClass($this->getRequest(), $this->getConfig());
+
+		$this->assertTrue($class->validateRedirectUri('http://localhost/', $client));
 	}
 
 	// TODO: Grammar fix, needs this does. HA, See what I did there?!
@@ -77,6 +87,59 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 
 		$this->assertFalse($class->validateScope('user', $client));
 		$this->assertEquals(302 ,$class->getError()['status']);
+	}
+
+	public function testValidateScopeReturnsTrueWhenScopeIsSupported()
+	{
+		$client = $this->getClient();
+		$client->shouldReceive('hasScopes')->with(['user'])->andReturn(true);
+		$class = $this->getClass($this->getRequest(['scope']), $this->getConfig());
+
+		$this->assertTrue($class->validateScope('user', $client));
+	}
+
+	public function testValidateRequestReturnsFalseWhenClientIsNotFound()
+	{
+		$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+		$clientRepo->shouldReceive('find')->with(1)->andReturnNull();
+		$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
+
+		$this->assertFalse($class->validateRequest());
+	}
+
+	public function testValidateRequestReturnsFalseRedirectUriIsPresentAndNotRegisteredWithClient()
+	{
+		$client = $this->getClient();
+		$client->shouldReceive('checkRedirectUri')->andReturn(false);
+		$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+		$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
+		$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
+
+		$this->assertFalse($class->validateRequest());
+	}
+
+	public function testValidateRequestReturnsFalseWhenScopeIsPresentAndClientDoesNotHaveAccessToIt()
+	{
+		$client = $this->getClient();
+		$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
+		$client->shouldReceive('hasScopes')->andReturn(false);
+		$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+		$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
+		$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
+
+		$this->assertFalse($class->validateRequest());
+	}
+
+	public function testValidateRequestReturnsTrueWhenEverythingIsHunkyDory()
+	{
+		$client = $this->getClient();
+		$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
+		$client->shouldReceive('hasScopes')->andReturn(true);
+		$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+		$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
+		$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
+
+		$this->assertTrue($class->validateRequest());
 	}
 
 	public function testErrorIsSetWhenSomethingFails()
