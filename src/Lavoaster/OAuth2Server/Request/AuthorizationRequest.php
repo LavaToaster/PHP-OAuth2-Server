@@ -28,6 +28,8 @@ class AuthorizationRequest
 	 */
 	protected $str;
 
+	protected $authorizationCode;
+
 	protected $error;
 
 	protected $requestDetails = [
@@ -169,6 +171,23 @@ class AuthorizationRequest
 	public function getError()
 	{
 		return $this->error;
+	}
+
+	public function issueCode(OAuthUserInterface $user = null)
+	{
+		$codeArray = [
+			'authorization_code' => $this->str->random(40),
+			'client_id'          => $this->requestDetails['client_id'],
+			'expires'            => strtotime($this->config['authorization_code']['expiry'])
+		];
+
+		if($user)                                 $codeArray['user_id']      = $user->getId();
+		if($this->requestDetails['scope'])        $codeArray['scopes']       = $this->requestDetails['scope'];
+		if($this->requestDetails['redirect_uri']) $codeArray['redirect_uri'] = $this->requestDetails['redirect_uri'];
+
+		$this->authorizationCode = $this->authorizationCodeRepository->create($codeArray);
+
+		return $this->authorizationCode;
 	}
 
 	/**
