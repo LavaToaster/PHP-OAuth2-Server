@@ -128,7 +128,7 @@ class AuthorizationRequest
 			// TODO: Handle what happens when the client is asking for scopes they can't use.
 		}*/
 		if(!$client->hasScopes(explode(' ', $scope))) {
-			return false;
+			return $this->error('invalid_scope', "Given scope set [{$scope}] is invalid, unknown or malformed");
 		}
 
 		return true;
