@@ -157,6 +157,31 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$this->assertEqualsArrays($class->getError(), $error, 'Error wasn\'t set properly');
 	}
 
+	public function testIssueCodeSetsEverythingAndReturnsAuthorizationCodeInterface()
+	{
+		$strClass = Mockery::mock('Illuminate\Support\Str');
+		$strClass->shouldReceive('random')->with(40)->andReturn('thisisnotarandomcode');
+
+		$user = Mockery::mock('Lavoaster\OAuth2Server\Storage\OAuthUserInterface');
+		$user->shouldReceive('getId')->andReturn(23);
+
+		$idealArray = [
+			'authorization_code' => 'thisisnotarandomcode',
+			'client_id'          => '1',
+			'expires'            => strtotime("+1 Minute"),
+			'user_id'            => 23,
+			'scopes'             => 'user',
+			'redirect_uri'       => 'http://localhost/'
+		];
+
+		$authCodeRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface');
+		$authCodeRepo->shouldReceive('create')->with($idealArray)->andReturn(Mockery::mock('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface'));
+
+		$class = $this->getClass($this->getRequest(), $this->getConfig(), $authCodeRepo, null, $strClass);
+
+		$this->assertInstanceOf('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface', $class->issueCode($user));
+	}
+
 	/*****************************************HELPER METHODS**************************************************/
 
 	protected function getClass(array $request, array $config, $authCodeRepoMock = null, $clientRepoMock = null, $strMock = null)
