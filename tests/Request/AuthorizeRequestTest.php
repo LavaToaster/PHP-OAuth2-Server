@@ -1,6 +1,9 @@
 <?php
 
 namespace {
+
+	use Mockery as m;
+
 	class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 	{
 		public function testValidateRequiredParamsReturnsFalseWhenResponseTypeIsMissing()
@@ -60,7 +63,7 @@ namespace {
 
 		public function testValidateRedirectUriCallsClientInterfaceAndFailsWhenRedirectUriIsInvalid()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('checkRedirectUri')->once()->andReturn(false);
 
 			$class = $this->getClass($this->getRequest(), $this->getConfig());
@@ -71,7 +74,7 @@ namespace {
 
 		public function testValidateRedirectUriCallsClientInterfaceAndReturnsTrueWhenNormal()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
 
 			$class = $this->getClass($this->getRequest(), $this->getConfig());
@@ -82,7 +85,7 @@ namespace {
 		// TODO: Grammar fix, needs this does. HA, See what I did there?!
 		public function testValidateScopeFailsWhenScopeIsNotSupportedForClient()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('hasScopes')->with(['user'])->andReturn(false);
 			$class = $this->getClass($this->getRequest(['scope']), $this->getConfig());
 
@@ -92,7 +95,7 @@ namespace {
 
 		public function testValidateScopeReturnsTrueWhenScopeIsSupported()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('hasScopes')->with(['user'])->andReturn(true);
 			$class = $this->getClass($this->getRequest(['scope']), $this->getConfig());
 
@@ -101,7 +104,7 @@ namespace {
 
 		public function testValidateRequestReturnsFalseWhenClientIsNotFound()
 		{
-			$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+			$clientRepo = m::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
 			$clientRepo->shouldReceive('find')->with(1)->andReturnNull();
 			$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
 
@@ -110,9 +113,9 @@ namespace {
 
 		public function testValidateRequestReturnsFalseRedirectUriIsPresentAndNotRegisteredWithClient()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('checkRedirectUri')->andReturn(false);
-			$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+			$clientRepo = m::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
 			$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
 			$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
 
@@ -121,10 +124,10 @@ namespace {
 
 		public function testValidateRequestReturnsFalseWhenScopeIsPresentAndClientDoesNotHaveAccessToIt()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
 			$client->shouldReceive('hasScopes')->andReturn(false);
-			$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+			$clientRepo = m::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
 			$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
 			$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
 
@@ -133,10 +136,10 @@ namespace {
 
 		public function testValidateRequestReturnsTrueWhenEverythingIsHunkyDory()
 		{
-			$client = $this->getClient();
+			$client = m::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 			$client->shouldReceive('checkRedirectUri')->once()->andReturn(true);
 			$client->shouldReceive('hasScopes')->andReturn(true);
-			$clientRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
+			$clientRepo = m::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface');
 			$clientRepo->shouldReceive('find')->with(1)->andReturn($client);
 			$class = $this->getClass($this->getRequest(), $this->getConfig(), null, $clientRepo);
 
@@ -160,10 +163,10 @@ namespace {
 
 		public function testIssueCodeSetsEverythingAndReturnsAuthorizationCodeInterface()
 		{
-			$strClass = Mockery::mock('Illuminate\Support\Str');
+			$strClass = m::mock('Illuminate\Support\Str');
 			$strClass->shouldReceive('random')->with(40)->andReturn('thisisnotarandomcode');
 
-			$user = Mockery::mock('Lavoaster\OAuth2Server\Storage\OAuthUserInterface');
+			$user = m::mock('Lavoaster\OAuth2Server\Storage\OAuthUserInterface');
 			$user->shouldReceive('getId')->andReturn(23);
 
 			$idealArray = [
@@ -175,8 +178,8 @@ namespace {
 				'redirect_uri'       => 'http://localhost/'
 			];
 
-			$authCodeRepo = Mockery::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface');
-			$authCodeRepo->shouldReceive('create')->with($idealArray)->andReturn(Mockery::mock('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface'));
+			$authCodeRepo = m::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface');
+			$authCodeRepo->shouldReceive('create')->with($idealArray)->andReturn(m::mock('Lavoaster\OAuth2Server\Storage\AuthorizationCodeInterface'));
 
 			$class = $this->getClass($this->getRequest(), $this->getConfig(), $authCodeRepo, null, $strClass);
 
@@ -188,9 +191,9 @@ namespace {
 		protected function getClass(array $request, array $config, $authCodeRepoMock = null, $clientRepoMock = null, $strMock = null)
 		{
 			return new Lavoaster\OAuth2Server\Request\AuthorizationRequest($request, $config,
-				$authCodeRepoMock ?: Mockery::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface'),
-				$clientRepoMock ?: Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface'),
-				$strMock ?: Mockery::mock('Illuminate\Support\Str')
+				$authCodeRepoMock ?: m::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface'),
+				$clientRepoMock ?: m::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface'),
+				$strMock ?: m::mock('Illuminate\Support\Str')
 			);
 		}
 
@@ -219,11 +222,6 @@ namespace {
 					'expiry' => '+1 Minute'
 				]
 			];
-		}
-
-		protected function getClient()
-		{
-			return Mockery::mock('Lavoaster\OAuth2Server\Storage\ClientInterface');
 		}
 
 		protected function assertEqualsArrays($expected, $actual, $message) {
