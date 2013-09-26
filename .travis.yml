@@ -14,3 +14,8 @@ script:
 
 after_script:
   - php vendor/bin/coveralls
+
+notifications:
+  hipchat:
+    rooms:
+      secure: RTsd7ANHopqW0aERJpgnFNx1n3kDZM2To+8H0m+NAH2i3ckq3yTCAHwCeEIBmTBNnDIbVaVzios8ahuRo2S1IsP8PREG42x2qZrysliXxlbiWxt6jd14VjxkMkFcBfPPJBYaPpcBkVXWCN94cfSIeGkoDtPtOSEFJqM28ld9vSk=
