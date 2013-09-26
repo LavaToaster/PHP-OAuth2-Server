@@ -7,6 +7,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['response_type' => null]), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(302, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsFalseWhenResponseTypeIsNotCode()
@@ -14,6 +15,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['response_type' => 'notcode']), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(302, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsFalseWhenClientIdMissing()
@@ -21,6 +23,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['client_id' => null]), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(400, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsFalseWhenRedirectUriIsMissingAndIsEnforced()
@@ -28,6 +31,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['redirect_uri' => null]), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(400, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsFalseWhenScopeIsMissingAndDefaultIsNull()
@@ -35,6 +39,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['scope' => null]), $this->getConfig());
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(302, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsFalseWhenStateIsMissingAndEnforced()
@@ -42,6 +47,7 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['state' => null]), $this->getConfig(true, true));
 
 		$this->assertFalse($class->validateRequiredParams());
+		$this->assertEquals(302, $class->getError()['status']);
 	}
 
 	public function testValidateRequiredParamsReturnsTrueWhenRedirectUriIsMissingAndIsNotEnforced()
@@ -59,9 +65,10 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(), $this->getConfig());
 
 		$this->assertFalse($class->validateRedirectUri('http://localhost', $client));
+		$this->assertEquals(400, $class->getError()['status']);
 	}
 
-	// TODO: Grammar fix, needs this does. HA, See what I did there?
+	// TODO: Grammar fix, needs this does. HA, See what I did there?!
 	public function testValidateScopeFailsWhenScopeIsNotSupportedForClient()
 	{
 		$client = $this->getClient();
@@ -69,11 +76,13 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['scope']), $this->getConfig());
 
 		$this->assertFalse($class->validateScope('user', $client));
+		$this->assertEquals(302 ,$class->getError()['status']);
 	}
 
 	public function testErrorIsSetWhenSomethingFails()
 	{
 		$error = [
+			'status' => 302,
 			'error' => 'unsupported_response_type',
 			'error_description' => 'response_type parameter MUST be set to code',
 			'error_uri' => 'http://tools.ietf.org/html/rfc6749#section-4.1.1'
@@ -82,16 +91,17 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 		$class = $this->getClass($this->getRequest(['response_type' => 'notcode']), $this->getConfig());
 
 		$this->assertFalse($class->validateRequest());
-		$this->assertEqualsArrays($error, $class->getError(), 'Error wasn\'t set properly');
+		$this->assertEqualsArrays($class->getError(), $error, 'Error wasn\'t set properly');
 	}
 
 	/*****************************************HELPER METHODS**************************************************/
 
-	protected function getClass(array $request, array $config)
+	protected function getClass(array $request, array $config, $authCodeRepoMock = null, $clientRepoMock = null, $strMock = null)
 	{
 		return new Lavoaster\OAuth2Server\Request\AuthorizationRequest($request, $config,
-			Mockery::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface'),
-			Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface')
+			$authCodeRepoMock ?: Mockery::mock('Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface'),
+			$clientRepoMock ?: Mockery::mock('Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface'),
+			$strMock ?: Mockery::mock('Illuminate\Support\Str')
 		);
 	}
 
@@ -115,6 +125,9 @@ class AuthorizeRequestTest extends PHPUnit_Framework_TestCase
 				'enforce_redirect_uri' => $uri,  // Should the Redirect URI  always be present in the request
 				'enforce_state'        => $state, // Should the state always be in the request
 				'default_scope'        => $scope, // If no default is specified and the client doesn't send the scope parameter, the request must fail according to the OAuth2.0 RFC.
+			],
+			'authorization_code' => [
+				'expiry' => '+1 Minute'
 			]
 		];
 	}
