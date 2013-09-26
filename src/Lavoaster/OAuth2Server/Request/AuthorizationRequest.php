@@ -2,7 +2,9 @@
 
 use Lavoaster\OAuth2Server\Repositories\AuthorizationCodeRepositoryInterface;
 use Lavoaster\OAuth2Server\Repositories\ClientRepositoryInterface;
+use Lavoaster\OAuth2Server\Response\Response;
 use Lavoaster\OAuth2Server\Storage\ClientInterface;
+use Lavoaster\OAuth2Server\Storage\OAuthUserInterface;
 
 class AuthorizationRequest
 {
@@ -21,16 +23,12 @@ class AuthorizationRequest
 	 */
 	protected $client;
 
-	protected $error = [
-		'error' => '',
-		'error_description' => null,
-		'error_uri' => null
-	];
-
 	/**
 	 * @var \Illuminate\Support\Str
 	 */
 	protected $str;
+
+	protected $error;
 
 	protected $requestDetails = [
 		'response_type' => null,
@@ -76,7 +74,7 @@ class AuthorizationRequest
 		}
 
 		if (!$client = $this->clientRepository->find($this->requestDetails['client_id'])) {
-			return $this->error('invalid_request', "Client id [{$this->requestDetails['client_id']}] not found");
+			return $this->error(400, 'invalid_request', "Client id [{$this->requestDetails['client_id']}] not found");
 		}
 
 		if ($this->requestDetails['redirect_uri'] && !$this->validateRedirectUri($this->requestDetails['redirect_uri'], $client)) {
@@ -90,57 +88,84 @@ class AuthorizationRequest
 		return true;
 	}
 
+	/**
+	 * Validates that the request has ALL required parameters
+	 *
+	 * @return bool
+	 */
 	public function validateRequiredParams()
 	{
 		if (!$this->requestDetails['response_type']) {
-			return $this->error('invalid_request', 'Required parameter response_type is missing', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
+			return $this->error(302, 'invalid_request', 'Required parameter response_type is missing', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
 		}
 
 		/* According to the RFC this MUST be set to code even though it is the only value at this time */
 		if ($this->requestDetails['response_type'] != 'code') {
-			return $this->error('unsupported_response_type', 'response_type parameter MUST be set to code', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
+			return $this->error(302, 'unsupported_response_type', 'response_type parameter MUST be set to code', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
 		}
 
+		/**
+		 * Missing client_id or redirect_uri must inform resource owner and not redirect back to client.
+		 * @link http://tools.ietf.org/html/rfc6749#section-4.1.2.1
+		 */
 		if (!$this->requestDetails['client_id']) {
-			return $this->error('invalid_request', 'Required parameter client_id missing', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
+			return $this->error(400, 'invalid_request', 'Required parameter client_id missing', 'http://tools.ietf.org/html/rfc6749#section-4.1.1');
 		}
 
 		if (!$this->requestDetails['redirect_uri'] && $this->config['oauth']['enforce_redirect_uri']) {
-			return $this->error('invalid_request', 'Required parameter redirect_uri was not present');
+			return $this->error(400, 'invalid_request', 'Required parameter redirect_uri was not present');
 		}
 
 		if (!$this->requestDetails['scope'] && !$this->config['oauth']['default_scope']) {
-			return $this->error('invalid_request', 'Required parameter scope was not present');
+			return $this->error(302, 'invalid_request', 'Required parameter scope was not present');
 		}
 
 		if (!$this->requestDetails['state'] && $this->config['oauth']['enforce_state']) {
-			return $this->error('invalid_request', 'Required parameter state was not present');
+			return $this->error(302, 'invalid_request', 'Required parameter state was not present');
 		}
 
 		return true;
 	}
 
+	/**
+	 * Validates that the contents of the redirect_uri parameter is registered
+	 * with the client
+	 *
+	 * @param string $redirectUri
+	 * @param ClientInterface $client
+	 * @return bool
+	 */
 	public function validateRedirectUri($redirectUri, ClientInterface $client)
 	{
 		if (!$client->checkRedirectUri($redirectUri)) {
-			return $this->error('invalid_request', "Given Redirect uri [{$this->requestDetails['redirect_uri']}] is not registered with the client");
+			return $this->error(400, 'invalid_request', "Given Redirect uri [{$this->requestDetails['redirect_uri']}] is not registered with the client");
 		}
 
 		return true;
 	}
 
+	/**
+	 * Validates that the client has access to the requested scopes
+	 *
+	 * @param string $scope
+	 * @param ClientInterface $client
+	 * @return bool
+	 */
 	public function validateScope($scope, ClientInterface $client)
 	{
-		/*if ($scope && count(array_diff(explode(' ', $scope), $client->getSupportedScopes()))) {
-			// TODO: Handle what happens when the client is asking for scopes they can't use.
-		}*/
 		if(!$client->hasScopes(explode(' ', $scope))) {
-			return $this->error('invalid_scope', "Given scope set [{$scope}] is invalid, unknown or malformed");
+			return $this->error(302, 'invalid_scope', "Given scope set [{$scope}] is invalid, unknown or malformed");
 		}
 
 		return true;
 	}
 
+	/**
+	 * Returns the errors encountered during validation.
+	 * All other errors should result in a redirect, with "?error=server_error" appended to the redirect_uri
+	 *
+	 * @return array|null
+	 */
 	public function getError()
 	{
 		return $this->error;
@@ -149,14 +174,16 @@ class AuthorizationRequest
 	/**
 	 * Helper method to set the error message and return false at the time
 	 *
+	 * @param int $status
 	 * @param string $error
 	 * @param string $error_description
 	 * @param string $error_uri
 	 * @return bool always false
 	 */
-	public function error($error, $error_description = '', $error_uri = '')
+	public function error($status, $error, $error_description = '', $error_uri = '')
 	{
 		$this->error = [
+			'status' => $status,
 			'error' => $error,
 			'error_description' => $error_description,
 			'error_uri' => $error_uri
